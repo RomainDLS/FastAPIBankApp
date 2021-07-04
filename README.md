@@ -18,7 +18,7 @@ git clone git@github.com:RomainDLS/FastAPIBankApp.git fast_api_bank
 
 # Install requirements
 cd fast_api_bank
-pip install -r requipemnts
+pip install -r requirements.txt
 ```
 
 ## Run server

@@ -1,5 +1,7 @@
+################### CLIENTS ###################
+
 ###
-# Get clients
+# List clients
 GET http://127.0.0.1:8000/clients
 
 ###
@@ -28,8 +30,11 @@ PUT http://127.0.0.1:8000/clients/1
 # Delete Client
 DELETE http://127.0.0.1:8000/clients/1
 
+
+################### ACCOUNTS ###################
+
 ###
-# Get accounts
+# List accounts
 GET http://127.0.0.1:8000/clients/1/accounts
 
 ###
@@ -43,6 +48,9 @@ GET http://127.0.0.1:8000/clients/1/accounts/1
 ###
 # Delete account
 DELETE http://127.0.0.1:8000/clients/1/accounts/1/
+
+
+################### ACCOUNT ACTIONS ###################
 
 ###
 # Deposit
@@ -62,6 +70,9 @@ POST http://127.0.0.1:8000/clients/1/accounts/1/withdrawal
     "amount": 20
 }
 
+
+################### TRANSACTIONS ###################
+
 ###
-# Get transactions
+# List transactions
 GET http://127.0.0.1:8000/clients/1/accounts/1/transactions

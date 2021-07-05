@@ -82,15 +82,3 @@ class Database:
             return self.get_clients()[client_id]
         except KeyError:
             raise HTTPException(status_code=404, detail="Client not found")
-
-    def get_account(self, client_id, account_id):
-        """
-        Récupère un compte client.
-        """
-        client = self.get_client(client_id)
-        accounts = client.setdefault('accounts', {})
-
-        try:
-            return accounts[account_id]
-        except KeyError:
-            raise HTTPException(status_code=404, detail="Account not found")

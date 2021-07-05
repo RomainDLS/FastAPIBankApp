@@ -1,7 +1,9 @@
 # Bank API (with python FastAPI)
 Project used for python formation. This project provite a simple banking application with the following features :
 * Manage clients (crud)
-* Manage accounts (crud + operations : withdrawal & deposit)
+* Manage accounts (crud)
+* Do operations on accounts : withdrawal & deposit
+* Record and show transactions
 
 
 

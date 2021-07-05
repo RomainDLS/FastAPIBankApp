@@ -1,9 +1,11 @@
 
 import os
-from database import Database
+from datetime import datetime
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, PositiveFloat
+
+from database import Database
 
 app = FastAPI()
 
@@ -17,14 +19,15 @@ async def list_clients():
     """
     # Récupère les clients de la base
     db = Database()
-    db_clients = db.clients
+    db_clients = db.get_clients()
 
     # Retourne une liste formatée
     api_response = []
     for client_id, client_dict in db_clients.items():
         api_response.append({
             'id': client_id,
-            **client_dict
+            'name': client_dict['name'],
+            'first_name': client_dict['first_name'],
         })
     return api_response
 
@@ -61,7 +64,7 @@ async def create_client(client: Client):
     """
     # Récupère les clients de la base
     db = Database()
-    db_clients = db.clients
+    db_clients = db.get_clients()
 
     # Trouve un nouvel identifiant
     client_id = str(int(max(db_clients.keys(), default=0)) + 1)
@@ -99,14 +102,15 @@ async def update_client(client_id: str, client: Client):
 @app.delete("/clients/{client_id}")
 async def delete_client(client_id: str):
     """
-    Met à jour un client.
+    Supprime un client.
     """
     # Vérifie que le client éxiste
     db = Database()
     db.get_client(client_id)
+    db_clients = db.get_clients()
 
     # Supprime le client
-    del db.clients[client_id]
+    del db_clients[client_id]
 
     # Sauvegarde la base
     db.save()
@@ -118,7 +122,7 @@ async def delete_client(client_id: str):
 @app.get("/clients/{client_id}/accounts")
 async def get_client_accounts(client_id: str):
     """
-    Met à jour un client.
+    Liste les comptes d'un client.
     """
     # Récupère le client de la base
     db = Database()
@@ -129,7 +133,7 @@ async def get_client_accounts(client_id: str):
     for account_id, account_dict in db_client['accounts'].items():
         api_response.append({
             'id': account_id,
-            **account_dict
+            'balance': account_dict['balance']
         })
     return api_response
 
@@ -137,7 +141,7 @@ async def get_client_accounts(client_id: str):
 @app.get("/clients/{client_id}/accounts/{account_id}")
 async def get_client_account(client_id: str, account_id: str):
     """
-    Met à jour un client.
+    Récupère le compte d'un client.
     """
     # Récupère le compte client de la base
     db = Database()
@@ -156,7 +160,7 @@ async def get_client_account(client_id: str, account_id: str):
 @app.post("/clients/{client_id}/accounts")
 async def create_client_account(client_id: str):
     """
-    Met à jour un client.
+    Créer le compte d'un client.
     """
     # Récupère le client de la base
     db = Database()
@@ -174,14 +178,14 @@ async def create_client_account(client_id: str):
     # Retourne la réponse formatée
     return {
         'id': account_id,
-        **db_client_accounts[account_id]
+        'balance': db_client_accounts[account_id]['balance']
     }
 
 
-@app.delete("/clients/{client_id}/account/{account_id}")
+@app.delete("/clients/{client_id}/accounts/{account_id}")
 async def delete_account(client_id: str, account_id: str):
     """
-    Met à jour un client.
+    Supprime le compte d'un client.
     """
     # Vérifie que le compte client existe
     db = Database()
@@ -199,6 +203,7 @@ async def delete_account(client_id: str, account_id: str):
 
 class Transaction(BaseModel):
     amount: PositiveFloat
+    label: str
 
 
 @app.post("/clients/{client_id}/accounts/{account_id}/withdrawal")
@@ -220,20 +225,29 @@ async def account_withdrawal(client_id: str, account_id: str, transaction: Trans
     # Met à jour le compte
     db_account['balance'] -= transaction.amount
 
+    # Ajoute une nouvelle transaction
+    transactions = db_account.setdefault('transactions', [])
+    transactions.append({
+        'label': transaction.label,
+        'value': -transaction.amount,
+        'date': str(datetime.now()),
+        'type': 'withdrawal'
+    })
+
     # Sauvegarde la base
     db.save()
 
     # Retourne la réponse formatée
     return {
         'id': account_id,
-        **db_account
+        'balance': db_account['balance']
     }
 
 
 @app.post("/clients/{client_id}/accounts/{account_id}/deposit")
 async def account_deposit(client_id: str, account_id: str, transaction: Transaction):
     """
-    Fait un retrait sur le compte d'un client.
+    Fait un dépôt sur le compte d'un client.
     """
     # Récupère le compte client de la base
     db = Database()
@@ -242,11 +256,36 @@ async def account_deposit(client_id: str, account_id: str, transaction: Transact
     # Met à jour le compte
     db_account['balance'] += transaction.amount
 
+    # Ajoute une nouvelle transaction
+    transactions = db_account.setdefault('transactions', [])
+    transactions.append({
+        'label': transaction.label,
+        'value': transaction.amount,
+        'date': str(datetime.now()),
+        'type': 'deposit'
+    })
+
     # Sauvegarde la base
     db.save()
 
     # Retourne la réponse formatée
     return {
         'id': account_id,
-        **db_account
+        'balance': db_account['balance']
     }
+
+
+# ************************** Client accounts transactions **************************
+
+
+@app.get("/clients/{client_id}/accounts/{account_id}/transactions")
+async def get_account_transactions(client_id: str, account_id: str):
+    """
+    Liste les transactions d'un client.
+    """
+    # Récupère le compte client de la base
+    db = Database()
+    db_account = db.get_account(client_id, account_id)
+
+    # Retourne la réponse formatée
+    return db_account.get('transactions', [])

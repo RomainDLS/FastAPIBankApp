@@ -6,8 +6,8 @@ from fastapi import HTTPException
 
 
 # Pour les besoins de la formation nous sauvegarderons les données
-# de cette application seront sauvegarder dans un fichier json.
-# En temps normal il faudrait se servir de véritable base de données (SQL) :
+# de cette application dans un fichier json.
+# En temps normal il faudrait se servir d'une véritable base de données (SQL) :
 # https://fastapi.tiangolo.com/tutorial/sql-databases/
 
 
@@ -31,7 +31,15 @@ class Database:
                 "first_name": <first_name>,
                 "accounts": {
                     <account_id>: {
-                        "balance": <balance>
+                        "balance": <balance>,
+                        "transactions": [
+                            {
+                                "label": <label>,
+                                "value": <value>,
+                                "type": <withdrawal|deposit>,
+                                "date": <date>
+                            }
+                        ]
                     }
                 }
             }
@@ -59,11 +67,11 @@ class Database:
         """
         Sauvegarde db_dict dans le ficher json.
         """
+        json_dict = json.dumps(self._db, indent=2)
         with open(DB_FILENAME, 'w') as json_file:
-            json.dump(self._db, json_file, indent=2)
+            json_file.write(json_dict)
 
-    @property
-    def clients(self):
+    def get_clients(self):
         return self._db['clients']
 
     def get_client(self, client_id):
@@ -71,7 +79,7 @@ class Database:
         Récupère un client.
         """
         try:
-            return self.clients[client_id]
+            return self.get_clients()[client_id]
         except KeyError:
             raise HTTPException(status_code=404, detail="Client not found")
 
@@ -80,7 +88,7 @@ class Database:
         Récupère un compte client.
         """
         client = self.get_client(client_id)
-        accounts = client['accounts']
+        accounts = client.setdefault('accounts', {})
 
         try:
             return accounts[account_id]

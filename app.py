@@ -225,15 +225,6 @@ async def account_withdrawal(client_id: str, account_id: str, transaction: Trans
     # Met à jour le compte
     db_account['balance'] -= transaction.amount
 
-    # Ajoute une nouvelle transaction
-    transactions = db_account.setdefault('transactions', [])
-    transactions.append({
-        'label': transaction.label,
-        'value': -transaction.amount,
-        'date': str(datetime.now()),
-        'type': 'withdrawal'
-    })
-
     # Sauvegarde la base
     db.save()
 
@@ -256,15 +247,6 @@ async def account_deposit(client_id: str, account_id: str, transaction: Transact
     # Met à jour le compte
     db_account['balance'] += transaction.amount
 
-    # Ajoute une nouvelle transaction
-    transactions = db_account.setdefault('transactions', [])
-    transactions.append({
-        'label': transaction.label,
-        'value': transaction.amount,
-        'date': str(datetime.now()),
-        'type': 'deposit'
-    })
-
     # Sauvegarde la base
     db.save()
 
@@ -273,19 +255,3 @@ async def account_deposit(client_id: str, account_id: str, transaction: Transact
         'id': account_id,
         'balance': db_account['balance']
     }
-
-
-# ************************** Client accounts transactions **************************
-
-
-@app.get("/clients/{client_id}/accounts/{account_id}/transactions")
-async def get_account_transactions(client_id: str, account_id: str):
-    """
-    Liste les transactions d'un client.
-    """
-    # Récupère le compte client de la base
-    db = Database()
-    db_account = db.get_account(client_id, account_id)
-
-    # Retourne la réponse formatée
-    return db_account.get('transactions', [])

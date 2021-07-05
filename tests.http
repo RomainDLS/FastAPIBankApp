@@ -69,10 +69,3 @@ POST http://127.0.0.1:8000/clients/1/accounts/1/withdrawal
     "label": "Retrait BNP Paris",
     "amount": 20
 }
-
-
-################### TRANSACTIONS ###################
-
-###
-# List transactions
-GET http://127.0.0.1:8000/clients/1/accounts/1/transactions

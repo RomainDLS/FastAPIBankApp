@@ -12,6 +12,10 @@ POST http://127.0.0.1:8000/clients
 }
 
 ###
+# Get client
+GET http://127.0.0.1:8000/clients/1
+
+###
 # Update Client
 PUT http://127.0.0.1:8000/clients/1
 
@@ -28,10 +32,13 @@ DELETE http://127.0.0.1:8000/clients/1
 # Get accounts
 GET http://127.0.0.1:8000/clients/1/accounts
 
-
 ###
 # Create account
 POST http://127.0.0.1:8000/clients/1/accounts
+
+###
+# Get account
+GET http://127.0.0.1:8000/clients/1/accounts/1
 
 ###
 # Delete account

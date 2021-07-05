@@ -29,3 +29,14 @@ uvicorn app:app --reload
 ```
 API url : http://127.0.0.1:8000/  
 Swagger doc : http://127.0.0.1:8000/docs
+
+# Update this project
+
+Update main branch and then merge main in `part_1`, `part_2`, `part_3`. Command to update all branchs from main :
+```
+git checkout main
+git pull
+git checkout part_1 && git merge main && git push
+git checkout part_2 && git merge main && git push
+git checkout part_3 && git merge main && git push
+```
